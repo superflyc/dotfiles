@@ -50,6 +50,25 @@ elif command -v apt-get >/dev/null 2>&1; then
         install /tmp/lazygit "$HOME/.local/bin"
         rm -rf /tmp/lazygit*
     fi
+
+    # GitHub CLI
+    if ! command -v gh >/dev/null 2>&1; then
+        sudo apt-get install -y gh
+    fi
+
+    # eza
+    if ! command -v eza >/dev/null 2>&1; then
+        sudo mkdir -p /etc/apt/keyrings
+        wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
+        echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list
+        sudo apt-get update && sudo apt-get install -y eza
+    fi
+
+    # Set default shell to zsh
+    if [ "$SHELL" != "$(which zsh)" ]; then
+        echo "==> Setting default shell to zsh..."
+        sudo chsh -s "$(which zsh)" "$USER"
+    fi
 fi
 
 echo "==> Setup complete."
