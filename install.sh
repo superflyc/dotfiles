@@ -23,7 +23,13 @@ if command -v brew >/dev/null 2>&1; then
 elif command -v apt-get >/dev/null 2>&1; then
     echo "==> Linux devcontainer detected. Installing packages via apt..."
     sudo apt-get update -y
-    sudo apt-get install -y git curl ripgrep fd-find bat fzf zsh
+    sudo apt-get install -y git curl ripgrep fd-find bat zsh
+
+    if ! command -v fzf >/dev/null 2>&1 || [[ "$(fzf --version)" < "0.48" ]]; then
+        git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+        ~/.fzf/install --bin
+        sudo ln -sf ~/.fzf/bin/fzf /usr/local/bin/fzf
+    fi
 
     mkdir -p "$HOME/.local/bin"
 
