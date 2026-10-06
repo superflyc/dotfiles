@@ -101,4 +101,19 @@ elif command -v apt-get >/dev/null 2>&1; then
     fi
 fi
 
+# Claude Code plugins from claude/settings.json (see README: Claude Code)
+if command -v claude >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
+    echo "==> Installing Claude Code plugins..."
+    jq -r '.extraKnownMarketplaces // {} | .[].source | .repo // .url' "$DOTFILES_DIR/claude/settings.json" |
+        while read -r source; do
+            claude plugin marketplace add "$source" --scope user || true
+        done
+    jq -r '.enabledPlugins // {} | to_entries[] | select(.value) | .key' "$DOTFILES_DIR/claude/settings.json" |
+        while read -r plugin; do
+            claude plugin install "$plugin" --scope user --yes || true
+        done
+else
+    echo "==> claude or jq not found; skipping Claude Code plugins"
+fi
+
 echo "==> Setup complete."

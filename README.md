@@ -101,3 +101,16 @@
     - `grep` → `rg`
     - `find` → `fd`
     - `lg` → `lazygit`
+
+# Claude Code
+
+- `claude/CLAUDE.md` is symlinked and `claude/settings.json` is merged into `~/.claude/`.
+- Plugins listed in `settings.json` (`enabledPlugins` / `extraKnownMarketplaces`) are not auto-installed from user settings — Claude Code only enables plugins that are already installed. They must be installed with the `claude` CLI, which `install.sh` does when `claude` and `jq` are present.
+- The CLI is not installed by these dotfiles. Each target devcontainer should add it in its `devcontainer.json` so it's cached in the image:
+  ```json
+  "features": {
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  }
+  ```
+  The feature installs via npm, so also add `"ghcr.io/devcontainers/features/node:1": {}` if the image doesn't already have Node.
+- `settings.json` is plain JSON, so documentation about it lives here rather than as comments in the file.
