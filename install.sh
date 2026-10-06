@@ -12,6 +12,30 @@ fi
 echo "==> Linking ~/.zshrc..."
 ln -sf "$DOTFILES_DIR/zshrc" "$HOME/.zshrc"
 
+# Claude Code (used by the VS Code extension too)
+mkdir -p "$HOME/.claude"
+
+if [ -f "$HOME/.claude/CLAUDE.md" ] && [ ! -L "$HOME/.claude/CLAUDE.md" ]; then
+    echo "==> Backing up existing ~/.claude/CLAUDE.md to ~/.claude/CLAUDE.md.backup"
+    mv "$HOME/.claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md.backup"
+fi
+
+echo "==> Linking ~/.claude/CLAUDE.md..."
+ln -sf "$DOTFILES_DIR/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+
+# settings.json is copied/merged rather than symlinked, since Claude Code writes to it
+CLAUDE_SETTINGS="$HOME/.claude/settings.json"
+if [ ! -f "$CLAUDE_SETTINGS" ]; then
+    echo "==> Installing ~/.claude/settings.json..."
+    cp "$DOTFILES_DIR/claude/settings.json" "$CLAUDE_SETTINGS"
+elif command -v jq >/dev/null 2>&1; then
+    echo "==> Merging dotfiles settings into ~/.claude/settings.json..."
+    jq -s '.[0] * .[1]' "$CLAUDE_SETTINGS" "$DOTFILES_DIR/claude/settings.json" > "$CLAUDE_SETTINGS.tmp"
+    mv "$CLAUDE_SETTINGS.tmp" "$CLAUDE_SETTINGS"
+else
+    echo "==> jq not found; skipping merge into existing ~/.claude/settings.json"
+fi
+
 # macOS / Homebrew
 if command -v brew >/dev/null 2>&1; then
     if [ -f "$DOTFILES_DIR/Brewfile" ]; then
@@ -23,7 +47,7 @@ if command -v brew >/dev/null 2>&1; then
 elif command -v apt-get >/dev/null 2>&1; then
     echo "==> Linux devcontainer detected. Installing packages via apt..."
     sudo apt-get update -y
-    sudo apt-get install -y git curl ripgrep fd-find bat zsh
+    sudo apt-get install -y git curl ripgrep fd-find bat zsh jq
 
     if ! command -v fzf >/dev/null 2>&1 || [[ "$(fzf --version)" < "0.48" ]]; then
         git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
